@@ -1,5 +1,5 @@
 export const environment = {
   production: false,
-  // En desarrollo también usamos el proxy para consistencia
-  apiUrl: 'https://corsproxy.io/?' + encodeURIComponent('https://farmanet.minsal.cl/maps/index.php/ws/getLocalesRegion?id_region=9')
+  // Usamos un proxy CORS público para evitar problemas de CORS y volver a la URL original solicitada
+  apiUrl: 'https://corsproxy.io/?' + encodeURIComponent('https://midas.minsal.cl/farmacia_v2/WS/getLocalesTurnos.php')
 };
