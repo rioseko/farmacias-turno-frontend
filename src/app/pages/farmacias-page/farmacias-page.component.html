@@ -1,0 +1,54 @@
+<div class="min-h-screen bg-gray-50">
+  <div class="max-w-6xl mx-auto px-4 py-6">
+    <div class="mb-6 text-center">
+      <img src="logo.png" alt="Farmacias de turno en {{ comuna | titlecase }}" class="h-32 mx-auto object-contain mix-blend-multiply">
+    </div>
+
+    @if (error) {
+      <div class="mb-4 p-4 bg-red-50 text-red-700 rounded-md">{{ error }}</div>
+    }
+
+    @if (loading) {
+      <div class="mb-4 p-4 bg-blue-50 text-blue-700 rounded-md flex justify-center items-center gap-2">
+        <div class="w-6 h-6 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+        <span>Cargando datos...</span>
+      </div>
+    }
+
+    <div class="space-y-6">
+      @if (farmacias.length > 0) {
+        <div class="flex justify-center">
+          <ul class="flex flex-wrap justify-center gap-4 w-full max-w-5xl">
+            @for (f of farmacias; track f) {
+              <li class="w-full sm:w-[300px] md:w-[340px] lg:w-[360px] p-5 bg-white rounded-md border shadow-sm">
+                <div class="text-2xl font-bold text-gray-900 mb-2">{{ f.nombre }}</div>
+                <div class="text-base text-gray-700 flex items-center gap-2">
+                  <span class="material-icons-outlined text-blue-600 text-base">schedule</span>
+                  <span>{{ formatHorario(f.horario) || 'No informado' }}</span>
+                </div>
+                <div class="text-base text-gray-700 flex items-center gap-2 mt-2">
+                  <span class="material-icons-outlined text-blue-600 text-base">place</span>
+                  <span>{{ f.direccion || 'No informado' }}</span>
+                </div>
+                <div class="text-base text-gray-700 flex items-center gap-2 mt-2">
+                  <span class="material-icons-outlined text-blue-600 text-base">call</span>
+                  <a class="hover:underline" href="tel:{{ cleanPhone(f.telefono) }}">{{ f.telefono || 'No informado' }}</a>
+                </div>
+              </li>
+            }
+          </ul>
+        </div>
+      } @else if (!loading && !error) {
+        <div class="flex justify-center">
+          <div class="text-sm text-gray-600 bg-white border rounded-md px-4 py-3 shadow-sm">
+            No hay farmacias disponibles para mostrar.
+          </div>
+        </div>
+      }
+
+      <div>
+        <div #map class="w-full h-[480px] rounded-md border shadow-sm"></div>
+      </div>
+    </div>
+  </div>
+</div>
