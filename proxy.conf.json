@@ -1,0 +1,8 @@
+{
+  "/farmacia_v2": {
+    "target": "https://midas.minsal.cl",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}

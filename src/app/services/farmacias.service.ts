@@ -12,9 +12,12 @@ export class FarmaciasService {
   constructor(private http: HttpClient) {}
 
   getFarmacias(comuna: string = 'temuco'): Observable<Farmacia[]> {
-    const timestamp = new Date().getTime();
-    
-    return this.http.get<any[]>(`${environment.apiUrl}&t=${timestamp}`).pipe(
+    const timestamp = new Date().getTime()
+    // Verificamos si la URL ya tiene parámetros para decidir entre ? o &
+    const separator = environment.apiUrl.includes('?') ? '&' : '?'
+    const url = `${environment.apiUrl}${separator}t=${timestamp}`
+
+    return this.http.get<any[]>(url).pipe(
       map(data => {
         const normalizedComuna = comuna.trim().toLowerCase();
         
