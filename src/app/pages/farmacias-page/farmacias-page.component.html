@@ -3,7 +3,7 @@
   <div class="page-orb page-orb--secondary"></div>
 
   <div class="relative mx-auto flex max-w-7xl flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-   <section class="hero-card overflow-hidden rounded-[28px] border border-white/60 bg-white/80 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.12)] backdrop-blur xl:p-8">
+    <section class="hero-card overflow-hidden rounded-[28px] border border-white/60 bg-white/80 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.12)] backdrop-blur xl:p-8">
       <div class="mx-auto flex max-w-5xl flex-col gap-5">
         <div class="space-y-5">
           <div class="inline-flex items-center gap-2 rounded-full bg-blue-600/10 px-4 py-2 text-sm font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20">
@@ -13,12 +13,54 @@
 
           <div class="space-y-3">
             <h1 class="text-3xl font-black tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">
-              Encuentra rápido la farmacia más cercana en Temuco
+              Farmacias de turno en Temuco hoy
             </h1>
             <p class="max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
-              Visualiza las farmacias disponibles, encuentra su ubicación en el mapa y revisa su horario y teléfono.
+              Consulta las farmacias de turno disponibles hoy en Temuco con mapa, direccion, telefono y horario actualizado en una sola pagina.
             </p>
           </div>
+
+          <div class="grid gap-3 sm:grid-cols-3">
+            <article class="stat-card">
+              <span class="stat-card__label">Comuna</span>
+              <strong class="stat-card__value">Temuco</strong>
+              <span class="stat-card__hint"></span>
+            </article>
+            <article class="stat-card">
+              <span class="stat-card__label">Actualizado</span>
+              <strong class="stat-card__value text-blue-700">{{ updatedLabel }}</strong>
+              <span class="stat-card__hint">Datos consultados para hoy</span>
+            </article>
+            <article class="stat-card">
+              <span class="stat-card__label">Resultados</span>
+              <strong class="stat-card__value text-emerald-600">{{ farmacias.length }}</strong>
+              <span class="stat-card__hint">Farmacias de turno para Temuco</span>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel-card rounded-[28px] border border-slate-200/70 bg-white/85 p-6 shadow-[0_24px_60px_rgba(15,23,42,0.10)] backdrop-blur">
+      <div class="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,0.7fr)]">
+        <div class="space-y-4">
+          <h2 class="text-2xl font-bold text-slate-950">Qué encontrarás en esta página de farmacias de turno en Temuco</h2>
+          <p class="text-sm leading-7 text-slate-600 sm:text-base">
+            Esta web esta enfocada solo en la ciudad de Temuco y muestra las farmacias de turno con la información que mas ayuda en una urgencia: dirección, horario, teléfono y ubicación en el mapa.
+          </p>
+          <p class="text-sm leading-7 text-slate-600 sm:text-base">
+            Si la opción está disponible, puedes abrir directamente su ubicación en el mapa. Si no, igualmente se mantiene visible en el listado para que puedas revisar sus datos y llamar.
+          </p>
+        </div>
+
+        <div class="rounded-[24px] border border-blue-100 bg-blue-50/80 p-5">
+          <h2 class="text-lg font-bold text-slate-950">Cobertura local en Temuco</h2>
+          <ul class="mt-4 grid gap-3 text-sm text-slate-700">
+            <li>Solo resultados de la comuna de Temuco.</li>
+            <li>Mapa para ubicar farmacias cercanas.</li>
+            <li>Fuente de datos basada en informacion oficial.</li>
+            <li>Interfaz pensada para consulta rapida desde celular.</li>
+          </ul>
         </div>
       </div>
     </section>
@@ -43,7 +85,7 @@
           <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p class="text-sm font-semibold uppercase tracking-[0.2em] text-blue-700">Mapa</p>
-              <h2 class="text-xl font-bold text-slate-950 sm:text-2xl">Ubicaciones</h2>
+              <h2 class="text-xl font-bold text-slate-950 sm:text-2xl">Ubicaciones en Temuco</h2>
             </div>
             <div class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-3 text-xs font-medium text-slate-600">
               <span class="material-icons-outlined text-sm text-emerald-700">place</span>
@@ -60,13 +102,12 @@
       </article>
 
       <div class="space-y-6">
-
         @if (farmacias.length > 0) {
           <article class="panel-card rounded-[28px] border border-slate-200/70 bg-white/85 p-4 shadow-[0_24px_60px_rgba(15,23,42,0.10)] backdrop-blur sm:p-5">
             <div class="mb-4 flex items-center justify-between gap-3 px-1">
               <div>
                 <p class="text-sm font-semibold uppercase tracking-[0.18em] text-blue-700">Listado</p>
-                <h3 class="text-xl font-bold text-slate-950">Farmacias disponibles</h3>
+                <h2 class="text-xl font-bold text-slate-950">Farmacias de turno disponibles en Temuco</h2>
               </div>
             </div>
             <ul class="grid gap-4">
@@ -74,7 +115,7 @@
                 <li class="pharmacy-card rounded-[24px] border border-slate-200/70 bg-gradient-to-br from-white via-white to-slate-50 p-5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-lg">
                   <div class="flex items-start justify-between gap-3">
                     <div>
-                      <h4 class="text-lg font-extrabold text-slate-950">{{ f.nombre }}</h4>
+                      <h3 class="text-lg font-extrabold text-slate-950">{{ f.nombre }}</h3>
                       <button
                         type="button"
                         class="mt-1 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold transition focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
@@ -118,13 +159,42 @@
             <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
               <span class="material-icons-outlined">local_pharmacy</span>
             </div>
-            <h3 class="mt-4 text-lg font-bold text-slate-900">No hay farmacias para mostrar</h3>
+            <h2 class="mt-4 text-lg font-bold text-slate-900">No hay farmacias para mostrar</h2>
             <p class="mt-2 text-sm text-slate-600">
               Intenta nuevamente en unos minutos para revisar si hay nuevos locales de turno.
             </p>
           </article>
         }
       </div>
+    </section>
+
+    <section class="grid gap-6 lg:grid-cols-2">
+      <article class="panel-card rounded-[28px] border border-slate-200/70 bg-white/85 p-6 shadow-[0_24px_60px_rgba(15,23,42,0.10)] backdrop-blur">
+        <h2 class="text-2xl font-bold text-slate-950">Cómo usar este listado de farmacias de turno en Temuco</h2>
+        <div class="mt-4 space-y-3 text-sm leading-7 text-slate-600 sm:text-base">
+          <p>Revisa primero el listado para ver el nombre del local, su horario de atencion y el télefono disponible.</p>
+          <p>Si aparece el botón <span class="font-semibold text-emerald-900">Ver en mapa</span>, puedes centrar el mapa en esa farmacia para ubicarla más rápido dentro de Temuco.</p>
+          <p>Si necesitas confirmar una dirección antes de salir, lo mas recomendable es llamar directamente al telefono publicado.</p>
+        </div>
+      </article>
+
+      <article class="panel-card rounded-[28px] border border-slate-200/70 bg-white/85 p-6 shadow-[0_24px_60px_rgba(15,23,42,0.10)] backdrop-blur">
+        <h2 class="text-2xl font-bold text-slate-950">Preguntas frecuentes</h2>
+        <div class="mt-4 space-y-4 text-sm leading-7 text-slate-600 sm:text-base">
+          <div>
+            <h3 class="font-semibold text-slate-950"><strong>Qué farmacia esta de turno hoy en Temuco</strong></h3>
+            <p>En esta página puedes revisar el listado de farmacias de turno de hoy en Temuco, con ubicación, dirección, teléfono y horario.</p>
+          </div>
+          <div>
+            <h3 class="font-semibold text-slate-950"><strong>La informacion es solo para Temuco</strong></h3>
+            <p>Si. El contenido de esta pagina esta orientado a la comuna de Temuco y no mezcla resultados de otras ciudades.</p>
+          </div>
+          <div>
+            <h3 class="font-semibold text-slate-950"><strong>¿De dónde salen los datos?</strong></h3>
+            <p>Los datos se basan en la informacion publicada por la fuente oficial del Ministerio de Salud y se presentan en una interfaz más fácil de consultar.</p>
+          </div>
+        </div>
+      </article>
     </section>
   </div>
 </div>
