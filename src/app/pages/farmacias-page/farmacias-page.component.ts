@@ -30,10 +30,13 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
   private markers: any[] = []
   private markerByFarmacia = new Map<string, any>()
   private sub?: Subscription
+  private hideLoadingTimeoutId?: number
+  private initialLoadStartedAt = 0
   private readonly fallbackCenter = { lat: -38.735, lng: -72.59 }
   private readonly canonicalPath = '/'
   private readonly seoScriptIds = ['seo-webpage-jsonld', 'seo-faq-jsonld', 'seo-itemlist-jsonld']
   private readonly isBrowser: boolean
+  private readonly minimumInitialLoadingMs = 1200
 
   constructor(
     private service: FarmaciasService,
@@ -48,37 +51,37 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.startInitialLoading()
     this.updateSeo()
     void this.initializePage()
   }
 
   ngOnDestroy(): void {
     this.sub?.unsubscribe()
+    if (this.hideLoadingTimeoutId) {
+      window.clearTimeout(this.hideLoadingTimeoutId)
+    }
     this.clearMarkers()
     this.removeStructuredData()
   }
 
   load(): void {
-    this.loading = true
     this.error = null
     this.sub?.unsubscribe()
     this.sub = this.service
       .getFarmacias(this.comuna)
       .pipe(finalize(() => {
-        this.loading = false
-        this.cdr.detectChanges()
+        this.finishInitialLoading()
       }))
       .subscribe({
         next: (data) => {
           this.farmacias = data
           this.renderMarkers()
           this.updateSeo()
-          this.loading = false
           this.cdr.detectChanges()
         },
         error: () => {
           this.error = 'No se pudo cargar la informacion'
-          this.loading = false
           this.updateSeo()
           this.cdr.detectChanges()
         },
@@ -169,6 +172,7 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
       console.error('[FarmaciasPage] Google Maps init failed', error)
       this.error = 'No se pudo inicializar Google Maps'
       this.updateSeo()
+      this.finishInitialLoading()
       this.cdr.detectChanges()
     }
   }
@@ -389,5 +393,31 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
       year: 'numeric',
       timeZone: 'America/Santiago',
     }).format(date)
+  }
+
+  private startInitialLoading(): void {
+    this.loading = true
+    this.initialLoadStartedAt = Date.now()
+  }
+
+  private finishInitialLoading(): void {
+    const elapsed = Date.now() - this.initialLoadStartedAt
+    const remaining = Math.max(0, this.minimumInitialLoadingMs - elapsed)
+
+    if (this.hideLoadingTimeoutId) {
+      window.clearTimeout(this.hideLoadingTimeoutId)
+    }
+
+    if (!this.isBrowser || remaining === 0) {
+      this.loading = false
+      this.cdr.detectChanges()
+      return
+    }
+
+    this.hideLoadingTimeoutId = window.setTimeout(() => {
+      this.loading = false
+      this.hideLoadingTimeoutId = undefined
+      this.cdr.detectChanges()
+    }, remaining)
   }
 }
