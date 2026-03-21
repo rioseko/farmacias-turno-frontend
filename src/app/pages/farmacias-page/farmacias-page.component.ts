@@ -1,5 +1,6 @@
-import { CommonModule, DOCUMENT } from '@angular/common'
+import { CommonModule, DOCUMENT, isPlatformBrowser } from '@angular/common'
 import { Component, ElementRef, Inject, OnDestroy, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core'
+import { PLATFORM_ID } from '@angular/core'
 import { Meta, Title } from '@angular/platform-browser'
 import { Subscription } from 'rxjs'
 import { finalize } from 'rxjs/operators'
@@ -32,6 +33,7 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
   private readonly fallbackCenter = { lat: -38.735, lng: -72.59 }
   private readonly canonicalPath = '/'
   private readonly seoScriptIds = ['seo-webpage-jsonld', 'seo-faq-jsonld', 'seo-itemlist-jsonld']
+  private readonly isBrowser: boolean
 
   constructor(
     private service: FarmaciasService,
@@ -39,8 +41,11 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private title: Title,
     private meta: Meta,
-    @Inject(DOCUMENT) private document: Document
-  ) {}
+    @Inject(DOCUMENT) private document: Document,
+    @Inject(PLATFORM_ID) platformId: object
+  ) {
+    this.isBrowser = isPlatformBrowser(platformId)
+  }
 
   ngOnInit(): void {
     this.updateSeo()
@@ -151,6 +156,11 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
   }
 
   private async initializePage(): Promise<void> {
+    if (!this.isBrowser) {
+      this.load()
+      return
+    }
+
     try {
       await this.mapsLoader.load()
       this.initMap()
