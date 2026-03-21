@@ -24,6 +24,7 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
   private map?: L.Map
   private markers: L.Layer[] = []
   private sub?: Subscription
+  private readonly fallbackCenter: L.LatLngExpression = [-38.735, -72.59]
 
   constructor(private service: FarmaciasService, private cdr: ChangeDetectorRef) {}
 
@@ -50,46 +51,49 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
         this.cdr.detectChanges()
       }))
       .subscribe({
-      next: (data) => {
-        this.farmacias = data
-        this.renderMarkers()
-        this.loading = false
-        this.cdr.detectChanges()
-      },
-      error: () => {
-        this.error = 'No se pudo cargar la información'
-        this.loading = false
-        this.cdr.detectChanges()
-      },
-    })
+        next: (data) => {
+          this.farmacias = data
+          this.renderMarkers()
+          this.loading = false
+          this.cdr.detectChanges()
+        },
+        error: () => {
+          this.error = 'No se pudo cargar la información'
+          this.loading = false
+          this.cdr.detectChanges()
+        },
+      })
   }
 
   private initMap(): void {
-    this.map = L.map(this.mapEl.nativeElement).setView([-38.735, -72.59], 13)
+    this.map = L.map(this.mapEl.nativeElement, {
+      zoomControl: false,
+    }).setView(this.fallbackCenter, 13)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
-      attribution: '© OpenStreetMap',
+      attribution: ' OpenStreetMap',
     }).addTo(this.map)
+    L.control.zoom({ position: 'bottomright' }).addTo(this.map)
   }
 
   private renderMarkers(): void {
     if (!this.map) return
     this.markers.forEach((m) => this.map!.removeLayer(m))
     this.markers = []
-    const points = this.farmacias.filter((f) => f.lat != null && f.lng != null)
+    const points = this.farmacias.filter((f) => this.hasCoordinates(f))
     points.forEach((f) => {
       const marker = L.circleMarker([f.lat as number, f.lng as number], {
-        radius: 12,
+        radius: 11,
         color: '#ffffff',
-        weight: 2,
-        fillColor: '#1c4ff7ff',
-        fillOpacity: 0.9,
+        weight: 3,
+        fillColor: '#2563eb',
+        fillOpacity: 0.95,
       }).bindPopup(
-        `<div class="text-sm">
-          <div class="font-semibold">${f.nombre}</div>
-          <div><strong>Horario:</strong> ${this.formatHorario(f.horario)}</div>
-          <div><strong>Dirección:</strong> ${f.direccion}</div>
-          <div><strong>Teléfono:</strong> ${this.cleanPhone(f.telefono)}</div>
+        `<div class="map-popup">
+          <div class="map-popup__title">${f.nombre}</div>
+          <div><strong>Horario:</strong> ${this.formatHorario(f.horario) || 'No informado'}</div>
+          <div><strong>Dirección:</strong> ${f.direccion || 'No informado'}</div>
+          <div><strong>Teléfono:</strong> ${f.telefono || 'No informado'}</div>
         </div>`
       )
       marker.addTo(this.map!)
@@ -97,8 +101,25 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
     })
     if (points.length) {
       const group = L.featureGroup(this.markers as L.Marker[])
-      this.map.fitBounds(group.getBounds().pad(0.2))
+      this.map.fitBounds(group.getBounds().pad(0.18), {
+        maxZoom: 16,
+      })
+    } else {
+      this.map.setView(this.fallbackCenter, 13)
     }
+    window.requestAnimationFrame(() => this.map?.invalidateSize())
+  }
+
+  get farmaciasConCoordenadas(): number {
+    return this.farmacias.filter((farmacia) => this.hasCoordinates(farmacia)).length
+  }
+
+  get farmaciasSinCoordenadas(): number {
+    return this.farmacias.length - this.farmaciasConCoordenadas
+  }
+
+  trackFarmacia(_index: number, farmacia: Farmacia): string {
+    return `${farmacia.nombre}-${farmacia.direccion}`
   }
 
   formatHorario(h: string): string {
@@ -115,5 +136,9 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
 
   cleanPhone(t: string): string {
     return String(t || '').replace(/[^\d+]/g, '')
+  }
+
+  private hasCoordinates(farmacia: Farmacia): farmacia is Farmacia & { lat: number; lng: number } {
+    return typeof farmacia.lat === 'number' && typeof farmacia.lng === 'number'
   }
 }
