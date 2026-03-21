@@ -96,10 +96,6 @@
   z-index: 1;
 }
 
-.hero-card {
-  padding-inline: clamp(1.5rem, 2vw, 2rem);
-}
-
 .stat-card {
   display: flex;
   min-height: 8.5rem;
@@ -147,21 +143,6 @@
   color: #b91c1c;
 }
 
-.status-banner--loading {
-  border-color: rgba(59, 130, 246, 0.18);
-  background: rgba(239, 246, 255, 0.92);
-  color: #1d4ed8;
-}
-
-.status-banner__spinner {
-  height: 1.2rem;
-  width: 1.2rem;
-  border: 3px solid rgba(147, 197, 253, 0.45);
-  border-top-color: currentcolor;
-  border-radius: 9999px;
-  animation: spin 0.85s linear infinite;
-}
-
 .map-frame {
   overflow: hidden;
   border: 1px solid rgba(191, 219, 254, 0.7);
@@ -204,8 +185,51 @@
   color: #b45309;
 }
 
+.toggle-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  align-self: flex-start;
+  border: 1px solid rgba(191, 219, 254, 0.9);
+  border-radius: 9999px;
+  background: rgba(239, 246, 255, 0.92);
+  color: #1e3a8a;
+  cursor: pointer;
+  padding: 0.75rem 1rem;
+}
+
+.toggle-chip input {
+  accent-color: #2563eb;
+}
+
 .pharmacy-card {
   overflow: hidden;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  padding: 0.45rem 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.status-pill--turno {
+  background: rgba(37, 99, 235, 0.12);
+  color: #1d4ed8;
+}
+
+.status-pill--open {
+  background: rgba(16, 185, 129, 0.18);
+  color: #047857;
+}
+
+.status-pill--closed {
+  background: rgba(244, 63, 94, 0.12);
+  color: #be123c;
 }
 
 .info-row {
@@ -242,10 +266,6 @@
 }
 
 @media (max-width: 767px) {
-  .hero-card {
-    padding-inline: 1.25rem;
-  }
-
   .map-canvas {
     min-height: 360px;
     height: 400px;

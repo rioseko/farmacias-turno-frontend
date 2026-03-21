@@ -3,8 +3,8 @@
     <div class="page-loading-overlay" aria-live="polite" aria-busy="true" role="status">
       <div class="page-loading-overlay__card">
         <div class="page-loading-overlay__spinner"></div>
-        <h2 class="page-loading-overlay__title">Cargando farmacias de turno</h2>
-        <p class="page-loading-overlay__text">Estamos consultando la informacion mas reciente para Temuco.</p>
+        <h2 class="page-loading-overlay__title">Cargando farmacias en Temuco</h2>
+        <p class="page-loading-overlay__text">Estamos consultando farmacias de turno y farmacias del dia para mostrar su estado actual.</p>
       </div>
     </div>
   }
@@ -18,7 +18,7 @@
         <div class="space-y-5">
           <div class="inline-flex items-center gap-2 rounded-full bg-blue-600/10 px-4 py-2 text-sm font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20">
             <span class="material-icons-outlined text-base">emergency</span>
-            <span>Farmacias de turno en {{ comuna | titlecase }}</span>
+            <span>Farmacias de turno y abiertas hoy en {{ comuna | titlecase }}</span>
           </div>
 
           <div class="space-y-3">
@@ -26,15 +26,15 @@
               Farmacias de turno en Temuco hoy
             </h1>
             <p class="max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
-              Consulta las farmacias de turno disponibles hoy en Temuco con mapa, direccion, telefono y horario actualizado en una sola pagina.
+              Revisa primero las farmacias de turno y, si lo necesitas, activa la vista completa para ver tambien las farmacias de Temuco que estan abiertas o cerradas durante la jornada de hoy.
             </p>
           </div>
 
-          <div class="grid gap-3 sm:grid-cols-3">
+          <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <article class="stat-card">
               <span class="stat-card__label">Comuna</span>
               <strong class="stat-card__value">Temuco</strong>
-              <span class="stat-card__hint"></span>
+              <span class="stat-card__hint">Solo resultados de Temuco</span>
             </article>
             <article class="stat-card">
               <span class="stat-card__label">Actualizado</span>
@@ -42,9 +42,14 @@
               <span class="stat-card__hint">Datos consultados para hoy</span>
             </article>
             <article class="stat-card">
-              <span class="stat-card__label">Resultados</span>
-              <strong class="stat-card__value text-emerald-600">{{ farmacias.length }}</strong>
-              <span class="stat-card__hint">Farmacias de turno para Temuco</span>
+              <span class="stat-card__label">De turno</span>
+              <strong class="stat-card__value text-blue-700">{{ farmaciasDeTurno.length }}</strong>
+              <span class="stat-card__hint"></span>
+            </article>
+            <article class="stat-card">
+              <span class="stat-card__label">Abiertas ahora</span>
+              <strong class="stat-card__value text-emerald-600">{{ farmaciasAbiertasAhora }}</strong>
+              <span class="stat-card__hint"></span>
             </article>
           </div>
         </div>
@@ -61,14 +66,22 @@
     <section class="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(340px,0.8fr)] xl:items-start">
       <article class="panel-card overflow-hidden rounded-[28px] border border-slate-200/70 bg-white/85 shadow-[0_24px_60px_rgba(15,23,42,0.10)] backdrop-blur">
         <div class="border-b border-slate-200/70 px-5 py-4 sm:px-6">
-          <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p class="text-sm font-semibold uppercase tracking-[0.2em] text-blue-700">Mapa</p>
               <h2 class="text-xl font-bold text-slate-950 sm:text-2xl">Ubicaciones en Temuco</h2>
             </div>
-            <div class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-3 text-xs font-medium text-slate-600">
-              <span class="material-icons-outlined text-sm text-emerald-700">place</span>
-              <span class="text-sm text-emerald-700">{{ farmaciasConCoordenadas }} Farmacias encontradas</span>
+
+            <div class="flex flex-col gap-3 lg:items-end">
+              <div class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-3 text-xs font-medium text-slate-600">
+                <span class="material-icons-outlined text-sm text-emerald-700">place</span>
+                <span class="text-sm text-emerald-700">{{ farmaciasConCoordenadas }} visibles en mapa</span>
+              </div>
+
+              <label class="toggle-chip">
+                <input type="checkbox" [checked]="mostrarTodas" (change)="toggleMostrarTodas($event)">
+                <span class="text-sm font-semibold leading-5">Mostrar todas las farmacias del dia</span>
+              </label>
             </div>
           </div>
         </div>
@@ -81,35 +94,51 @@
       </article>
 
       <div class="space-y-6">
-        @if (farmacias.length > 0) {
+        @if (farmaciasVisibles.length > 0) {
           <article class="panel-card rounded-[28px] border border-slate-200/70 bg-white/85 p-4 shadow-[0_24px_60px_rgba(15,23,42,0.10)] backdrop-blur sm:p-5">
-            <div class="mb-4 flex items-center justify-between gap-3 px-1">
-              <div>
-                <p class="text-sm font-semibold uppercase tracking-[0.18em] text-blue-700">Listado</p>
-                <h2 class="text-xl font-bold text-slate-950">Farmacias de turno disponibles en Temuco</h2>
+            <div class="mb-4 flex flex-col gap-3 px-1">
+              <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p class="text-sm font-semibold uppercase tracking-[0.18em] text-blue-700">Listado</p>
+                  <h2 class="text-xl font-bold text-slate-950">{{ visibleListTitle }}</h2>
+                </div>
+                <div class="inline-flex items-center rounded-full bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700">
+                  {{ farmaciasVisibles.length }} resultados
+                </div>
+              </div>
+
+              <div class="grid gap-3 sm:grid-cols-2">
+                <div class="summary-row">
+                  <span>Vista</span>
+                  <strong>{{ mostrarTodas ? 'Todas' : 'Turno' }}</strong>
+                </div>
+                <div class="summary-row summary-row--success">
+                  <span>Abiertas ahora</span>
+                  <strong>{{ farmaciasVisiblesAbiertasAhora }}</strong>
+                </div>
               </div>
             </div>
+
             <ul class="grid gap-4">
-              @for (f of farmacias; track trackFarmacia($index, f)) {
+              @for (f of farmaciasVisibles; track trackFarmacia($index, f)) {
                 <li class="pharmacy-card rounded-[24px] border border-slate-200/70 bg-gradient-to-br from-white via-white to-slate-50 p-5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-lg">
                   <div class="flex items-start justify-between gap-3">
-                    <div>
-                      <h3 class="text-lg font-extrabold text-slate-950">{{ f.nombre }}</h3>
-                      <button
-                        type="button"
-                        class="mt-1 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold transition focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
-                        [class.bg-emerald-50]="f.lat !== null && f.lng !== null"
-                        [class.text-emerald-700]="f.lat !== null && f.lng !== null"
-                        [class.hover:bg-emerald-100]="f.lat !== null && f.lng !== null"
-                        [class.cursor-pointer]="f.lat !== null && f.lng !== null"
-                        [class.bg-amber-50]="f.lat === null || f.lng === null"
-                        [class.text-amber-700]="f.lat === null || f.lng === null"
-                        [class.cursor-not-allowed]="f.lat === null || f.lng === null"
-                        [disabled]="f.lat === null || f.lng === null"
-                        (click)="focusFarmaciaOnMap(f)">
-                        <span class="material-icons-outlined text-sm">near_me</span>
-                        <span>{{ f.lat !== null && f.lng !== null ? 'Ver en mapa' : 'Sin pin disponible' }}</span>
-                      </button>
+                    <div class="space-y-1">
+                      <div class="flex flex-wrap items-center gap-2">
+                        <h3 class="text-lg font-extrabold text-slate-950">{{ f.nombre }}</h3>
+                        @if (f.esDeTurno) {
+                          <span class="status-pill status-pill--turno">De turno</span>
+                        }
+                      </div>
+                      <p class="text-sm font-semibold uppercase tracking-[0.18em] text-blue-700">
+                        {{ f.localidad || f.comuna || 'Temuco' }}
+                      </p>
+                    </div>
+
+                    <div class="flex flex-wrap items-center justify-end gap-2">
+                      <span class="status-pill" [class.status-pill--open]="f.estaAbierta" [class.status-pill--closed]="!f.estaAbierta">
+                        {{ f.estaAbierta ? 'Abierta' : 'Cerrada' }}
+                      </span>
                     </div>
                   </div>
 
@@ -124,10 +153,45 @@
                     </div>
                     <div class="info-row">
                       <span class="material-icons-outlined info-row__icon">call</span>
-                      <a class="font-medium text-blue-700 hover:text-blue-800 hover:underline" href="tel:{{ cleanPhone(f.telefono) }}">
-                        {{ f.telefono || 'No informado' }}
-                      </a>
+                      @if (f.telefono) {
+                        <a class="font-medium text-blue-700 hover:text-blue-800 hover:underline" href="tel:{{ cleanPhone(f.telefono) }}">
+                          {{ f.telefono }}
+                        </a>
+                      } @else {
+                        <span>No informado</span>
+                      }
                     </div>
+                  </div>
+
+                  <div class="mt-4 flex flex-col gap-3 sm:flex-row">
+                    @if (f.telefono) {
+                      <a
+                        class="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-800 transition hover:border-slate-300 hover:bg-slate-50"
+                        href="tel:{{ cleanPhone(f.telefono) }}">
+                        <span class="material-icons-outlined text-base">call</span>
+                        <span>Llamar</span>
+                      </a>
+                    } @else {
+                      <span class="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-400">
+                        <span class="material-icons-outlined text-base">call_off</span>
+                        <span>Sin telefono</span>
+                      </span>
+                    }
+
+                    <button
+                      type="button"
+                      class="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+                      [class.bg-blue-600]="f.lat !== null && f.lng !== null"
+                      [class.text-white]="f.lat !== null && f.lng !== null"
+                      [class.hover:bg-blue-700]="f.lat !== null && f.lng !== null"
+                      [class.bg-slate-100]="f.lat === null || f.lng === null"
+                      [class.text-slate-400]="f.lat === null || f.lng === null"
+                      [class.cursor-not-allowed]="f.lat === null || f.lng === null"
+                      [disabled]="f.lat === null || f.lng === null"
+                      (click)="focusFarmaciaOnMap(f)">
+                      <span class="material-icons-outlined text-base">map</span>
+                      <span>{{ f.lat !== null && f.lng !== null ? 'Ver mapa' : 'Sin pin disponible' }}</span>
+                    </button>
                   </div>
                 </li>
               }
@@ -139,9 +203,15 @@
               <span class="material-icons-outlined">local_pharmacy</span>
             </div>
             <h2 class="mt-4 text-lg font-bold text-slate-900">No hay farmacias para mostrar</h2>
-            <p class="mt-2 text-sm text-slate-600">
-              Intenta nuevamente en unos minutos para revisar si hay nuevos locales de turno.
-            </p>
+            @if (!mostrarTodas && farmacias.length > 0) {
+              <p class="mt-2 text-sm text-slate-600">
+                No hay farmacias de turno visibles en este momento. Activa <strong>Mostrar todas las farmacias del dia</strong> para revisar tambien las abiertas o cerradas de hoy en Temuco.
+              </p>
+            } @else {
+              <p class="mt-2 text-sm text-slate-600">
+                Intenta nuevamente en unos minutos para revisar si hay nuevos locales disponibles para Temuco.
+              </p>
+            }
           </article>
         }
       </div>
@@ -149,11 +219,11 @@
 
     <section class="grid gap-6 lg:grid-cols-2">
       <article class="panel-card rounded-[28px] border border-slate-200/70 bg-white/85 p-6 shadow-[0_24px_60px_rgba(15,23,42,0.10)] backdrop-blur">
-        <h2 class="text-2xl font-bold text-slate-950">Cómo usar este listado de farmacias de turno en Temuco</h2>
+        <h2 class="text-2xl font-bold text-slate-950">Como usar este listado de farmacias en Temuco</h2>
         <div class="mt-4 space-y-3 text-sm leading-7 text-slate-600 sm:text-base">
-          <p>Revisa primero el listado para ver el nombre del local, su horario de atencion y el télefono disponible.</p>
-          <p>Si aparece el botón <span class="font-semibold text-emerald-900">Ver en mapa</span>, puedes centrar el mapa en esa farmacia para ubicarla más rápido dentro de Temuco.</p>
-          <p>Si necesitas confirmar una dirección antes de salir, lo mas recomendable es llamar directamente al telefono publicado.</p>
+          <p>Por defecto veras primero las farmacias de turno, que son las mas relevantes para una consulta rapida.</p>
+          <p>Si activas <span class="font-semibold text-emerald-900">Mostrar todas las farmacias del dia</span>, se sumaran tambien las farmacias abiertas o cerradas de hoy en Temuco.</p>
+          <p>El badge verde indica que la farmacia esta abierta a la hora actual y el badge rosado indica que ya esta cerrada.</p>
         </div>
       </article>
 
@@ -161,16 +231,16 @@
         <h2 class="text-2xl font-bold text-slate-950">Preguntas frecuentes</h2>
         <div class="mt-4 space-y-4 text-sm leading-7 text-slate-600 sm:text-base">
           <div>
-            <h3 class="font-bold text-slate-950">Qué farmacia esta de turno hoy en Temuco</h3>
-            <p>En esta página puedes revisar el listado de farmacias de turno de hoy en Temuco, con ubicación, dirección, teléfono y horario.</p>
+            <h3 class="font-bold text-slate-950">Que farmacia esta de turno hoy en Temuco</h3>
+            <p>En esta pagina puedes revisar el listado de farmacias de turno de hoy en Temuco, con ubicacion, direccion, telefono y horario.</p>
           </div>
           <div>
-            <h3 class="font-bold text-slate-950">La informacion es solo para Temuco</h3>
-            <p>Si. El contenido de esta pagina esta orientado a la comuna de Temuco y no mezcla resultados de otras ciudades.</p>
+            <h3 class="font-bold text-slate-950">Tambien se muestran farmacias que no estan de turno</h3>
+            <p>Si. Puedes activar la vista completa para ver todas las farmacias del dia en Temuco y distinguir si estan abiertas o cerradas.</p>
           </div>
           <div>
-            <h3 class="font-bold text-slate-950">¿De dónde salen los datos?</h3>
-            <p>Los datos se basan en la informacion publicada por la fuente oficial del Ministerio de Salud y se presentan en una interfaz más fácil de consultar.</p>
+            <h3 class="font-bold text-slate-950">De donde salen los datos</h3>
+            <p>Los datos se basan en la informacion publicada por la fuente oficial del Ministerio de Salud y se muestran enfocados solo en Temuco.</p>
           </div>
         </div>
       </article>

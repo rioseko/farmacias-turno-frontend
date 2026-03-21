@@ -1,5 +1,5 @@
 import { CommonModule, DOCUMENT, isPlatformBrowser } from '@angular/common'
-import { Component, ElementRef, Inject, OnDestroy, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core'
+import { ChangeDetectorRef, Component, ElementRef, Inject, OnDestroy, OnInit, ViewChild } from '@angular/core'
 import { PLATFORM_ID } from '@angular/core'
 import { Meta, Title } from '@angular/platform-browser'
 import { Subscription } from 'rxjs'
@@ -21,6 +21,7 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
 
   comuna = 'temuco'
   farmacias: Farmacia[] = []
+  mostrarTodas = false
   loading = false
   error: string | null = null
   readonly updatedLabel = this.formatLongDate(new Date())
@@ -70,9 +71,7 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
     this.sub?.unsubscribe()
     this.sub = this.service
       .getFarmacias(this.comuna)
-      .pipe(finalize(() => {
-        this.finishInitialLoading()
-      }))
+      .pipe(finalize(() => this.finishInitialLoading()))
       .subscribe({
         next: (data) => {
           this.farmacias = data
@@ -88,20 +87,48 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
       })
   }
 
+  get farmaciasDeTurno(): Farmacia[] {
+    return this.farmacias.filter((farmacia) => farmacia.esDeTurno)
+  }
+
+  get farmaciasVisibles(): Farmacia[] {
+    return this.mostrarTodas ? this.farmacias : this.farmaciasDeTurno
+  }
+
+  get farmaciasAbiertasAhora(): number {
+    return this.farmacias.filter((farmacia) => farmacia.estaAbierta).length
+  }
+
+  get farmaciasCerradasAhora(): number {
+    return this.farmacias.length - this.farmaciasAbiertasAhora
+  }
+
+  get farmaciasVisiblesAbiertasAhora(): number {
+    return this.farmaciasVisibles.filter((farmacia) => farmacia.estaAbierta).length
+  }
+
   get farmaciasConCoordenadas(): number {
-    return this.farmacias.filter((farmacia) => this.hasCoordinates(farmacia)).length
+    return this.farmaciasVisibles.filter((farmacia) => this.hasCoordinates(farmacia)).length
   }
 
   get farmaciasSinCoordenadas(): number {
-    return this.farmacias.length - this.farmaciasConCoordenadas
+    return this.farmaciasVisibles.length - this.farmaciasConCoordenadas
+  }
+
+  get resultadosVisiblesLabel(): string {
+    return this.mostrarTodas ? 'Farmacias visibles del dia en Temuco' : 'Farmacias de turno visibles en Temuco'
+  }
+
+  get visibleListTitle(): string {
+    return this.mostrarTodas ? 'Farmacias del día en Temuco' : 'Farmacias de turno en Temuco'
   }
 
   get seoDescription(): string {
     if (this.farmacias.length > 0) {
-      return `Consulta ${this.farmacias.length} farmacias de turno en Temuco hoy, con mapa, direccion, telefono y horario actualizado.`
+      return `Consulta ${this.farmaciasDeTurno.length} farmacias de turno y ${this.farmaciasAbiertasAhora} farmacias abiertas ahora en Temuco, con mapa, direccion, telefono y horario actualizado.`
     }
 
-    return 'Consulta las farmacias de turno en Temuco hoy con mapa, direccion, telefono y horarios actualizados.'
+    return 'Consulta las farmacias de turno y las farmacias abiertas hoy en Temuco con mapa, direccion, telefono y horarios actualizados.'
   }
 
   trackFarmacia(_index: number, farmacia: Farmacia): string {
@@ -109,10 +136,9 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
   }
 
   formatHorario(value: string): string {
-    if (!value) return ''
+    if (!value || value === '24 horas') return value
 
-    const normalized = value.replace(/[–—]/g, '-')
-    const parts = normalized.split('-')
+    const parts = value.split('-')
     const formatPart = (part: string) => {
       const match = part.trim().match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/)
       if (match) {
@@ -126,7 +152,7 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
       return `${formatPart(parts[0])} - ${formatPart(parts[1])}`
     }
 
-    return formatPart(normalized)
+    return formatPart(value)
   }
 
   cleanPhone(value: string): string {
@@ -156,6 +182,14 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
       behavior: 'smooth',
       block: 'center',
     })
+  }
+
+  toggleMostrarTodas(event: Event): void {
+    const input = event.target as HTMLInputElement | null
+    this.mostrarTodas = !!input?.checked
+    this.renderMarkers()
+    this.updateSeo()
+    this.cdr.detectChanges()
   }
 
   private async initializePage(): Promise<void> {
@@ -205,7 +239,7 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
     if (!this.map || !window.google?.maps) return
 
     this.clearMarkers()
-    const points = this.farmacias.filter((farmacia) => this.hasCoordinates(farmacia))
+    const points = this.farmaciasVisibles.filter((farmacia) => this.hasCoordinates(farmacia))
     const bounds = new window.google.maps.LatLngBounds()
 
     points.forEach((farmacia) => {
@@ -214,6 +248,8 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
         map: this.map,
         position,
         title: farmacia.nombre,
+        icon: this.buildMarkerIcon(farmacia),
+        zIndex: farmacia.esDeTurno ? 20 : 10,
       })
 
       marker.addListener('click', () => {
@@ -243,6 +279,19 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
     this.map.setZoom(13)
   }
 
+  private buildMarkerIcon(farmacia: Farmacia): Record<string, unknown> {
+    const fillColor = farmacia.esDeTurno ? '#2563eb' : farmacia.estaAbierta ? '#10b981' : '#fb7185'
+
+    return {
+      path: window.google.maps.SymbolPath.CIRCLE,
+      fillColor,
+      fillOpacity: 0.95,
+      strokeColor: '#ffffff',
+      strokeWeight: 2,
+      scale: farmacia.esDeTurno ? 10 : 8,
+    }
+  }
+
   private clearMarkers(): void {
     this.markers.forEach((marker) => marker.setMap(null))
     this.markers = []
@@ -250,7 +299,7 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
   }
 
   private updateSeo(): void {
-    const pageTitle = 'Farmacias de turno en Temuco hoy | Mapa y listado actualizado'
+    const pageTitle = 'Farmacias de turno en Temuco hoy | Turno y abiertas ahora'
     const canonicalUrl = this.buildCanonicalUrl()
     const description = this.seoDescription
 
@@ -295,7 +344,7 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
       description,
       url: canonicalUrl,
       inLanguage: 'es-CL',
-      about: 'Farmacias de turno en Temuco',
+      about: 'Farmacias de turno y farmacias abiertas hoy en Temuco',
       dateModified: new Date().toISOString(),
     }
 
@@ -313,15 +362,15 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
         },
         {
           '@type': 'Question',
-          name: 'La informacion de farmacias de turno en Temuco esta actualizada',
+          name: 'Tambien puedo ver farmacias abiertas en Temuco que no estan de turno',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'La informacion se consulta desde la fuente oficial del Ministerio de Salud y se muestra enfocada solo en la comuna de Temuco.',
+            text: 'Si. Ademas del listado por defecto de farmacias de turno, puedes activar la opcion para mostrar todas las farmacias del dia en Temuco y ver si estan abiertas o cerradas.',
           },
         },
         {
           '@type': 'Question',
-          name: 'Como ver una farmacia de turno en el mapa',
+          name: 'Como ver una farmacia en el mapa',
           acceptedAnswer: {
             '@type': 'Answer',
             text: 'Cada farmacia con coordenadas disponibles permite abrir su ubicacion en el mapa para revisar rapidamente donde esta dentro de Temuco.',
@@ -334,8 +383,8 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
       '@context': 'https://schema.org',
       '@type': 'ItemList',
       name: 'Farmacias de turno en Temuco',
-      numberOfItems: this.farmacias.length,
-      itemListElement: this.farmacias.slice(0, 25).map((farmacia, index) => ({
+      numberOfItems: this.farmaciasDeTurno.length,
+      itemListElement: this.farmaciasDeTurno.slice(0, 25).map((farmacia, index) => ({
         '@type': 'ListItem',
         position: index + 1,
         item: {
@@ -370,11 +419,20 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
   }
 
   private buildInfoWindowContent(farmacia: Farmacia): string {
+    const nombre = this.escapeHtml(farmacia.nombre)
+    const direccion = this.escapeHtml(farmacia.direccion || 'No informado')
+    const telefono = this.escapeHtml(farmacia.telefono || 'No informado')
+    const horario = this.escapeHtml(this.formatHorario(farmacia.horario) || 'No informado')
+    const estado = farmacia.estaAbierta ? 'Abierta ahora' : 'Cerrada'
+    const tipo = farmacia.esDeTurno ? 'De turno' : 'Farmacia del dia'
+
     return `<div class="map-popup">
-      <div class="map-popup__title">${farmacia.nombre}</div>
-      <div><strong>Horario:</strong> ${this.formatHorario(farmacia.horario) || 'No informado'}</div>
-      <div><strong>Direccion:</strong> ${farmacia.direccion || 'No informado'}</div>
-      <div><strong>Telefono:</strong> ${farmacia.telefono || 'No informado'}</div>
+      <div class="map-popup__title">${nombre}</div>
+      <div><strong>Estado:</strong> ${estado}</div>
+      <div><strong>Tipo:</strong> ${tipo}</div>
+      <div><strong>Horario:</strong> ${horario}</div>
+      <div><strong>Direccion:</strong> ${direccion}</div>
+      <div><strong>Telefono:</strong> ${telefono}</div>
     </div>`
   }
 
@@ -383,7 +441,16 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
   }
 
   private getFarmaciaKey(farmacia: Farmacia): string {
-    return `${farmacia.nombre}-${farmacia.direccion}`
+    return farmacia.id || `${farmacia.nombre}-${farmacia.direccion}`
+  }
+
+  private escapeHtml(value: string): string {
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;')
   }
 
   private formatLongDate(date: Date): string {
