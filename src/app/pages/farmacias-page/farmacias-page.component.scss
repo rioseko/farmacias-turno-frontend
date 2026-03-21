@@ -168,44 +168,6 @@
   color: #2563eb;
 }
 
-:host ::ng-deep .leaflet-control-zoom {
-  border: 0;
-  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.18);
-}
-
-:host ::ng-deep .leaflet-control-zoom a {
-  display: grid;
-  place-items: center;
-  width: 2.4rem;
-  height: 2.4rem;
-  border: 0;
-  color: #0f172a;
-}
-
-:host ::ng-deep .leaflet-control-zoom a:first-child {
-  border-top-left-radius: 0.9rem;
-  border-top-right-radius: 0.9rem;
-}
-
-:host ::ng-deep .leaflet-control-zoom a:last-child {
-  border-bottom-left-radius: 0.9rem;
-  border-bottom-right-radius: 0.9rem;
-}
-
-:host ::ng-deep .leaflet-popup-content-wrapper {
-  border-radius: 1rem;
-  box-shadow: 0 24px 50px rgba(15, 23, 42, 0.18);
-  padding: 0.2rem;
-}
-
-:host ::ng-deep .leaflet-popup-content {
-  margin: 0;
-}
-
-:host ::ng-deep .leaflet-popup-tip {
-  box-shadow: none;
-}
-
 .map-popup {
   min-width: 220px;
   padding: 0.9rem 1rem;

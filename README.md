@@ -12,6 +12,30 @@ ng serve
 
 Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
 
+## Google Maps config
+
+The Google Maps key is not stored in the repository. For local development, choose one of these options:
+
+```bash
+set GOOGLE_MAPS_API_KEY=your_key
+npm run start
+```
+
+Or create `.env` or `.env.local` based on `.env.example`.
+
+Or in the browser console:
+
+```js
+localStorage.setItem('farmacias-turno:google-maps-api-key', 'your_key')
+```
+
+For Netlify, configure these environment variables in the site settings:
+
+- `GOOGLE_MAPS_API_KEY`
+- `GOOGLE_MAPS_MAP_ID` (optional)
+
+The build generates `public/app-config.js` from those variables, and Netlify serves it with the static site.
+
 ## Code scaffolding
 
 Angular CLI includes powerful code scaffolding tools. To generate a new component, run:

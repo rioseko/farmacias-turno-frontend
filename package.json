@@ -2,10 +2,11 @@
   "name": "frontend",
   "version": "0.0.0",
   "scripts": {
+    "prepare:app-config": "node scripts/write-app-config.mjs",
     "ng": "ng",
-    "start": "set NG_CLI_ANALYTICS=false&& ng serve --no-open",
-    "build": "ng build",
-    "watch": "ng build --watch --configuration development",
+    "start": "npm run prepare:app-config && set NG_CLI_ANALYTICS=false&& ng serve --no-open",
+    "build": "npm run prepare:app-config && ng build",
+    "watch": "npm run prepare:app-config && ng build --watch --configuration development",
     "test": "ng test"
   },
   "prettier": {
