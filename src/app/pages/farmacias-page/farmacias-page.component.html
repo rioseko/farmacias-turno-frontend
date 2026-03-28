@@ -13,6 +13,23 @@
   <div class="page-orb page-orb--secondary"></div>
 
   <div class="relative mx-auto flex max-w-7xl flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+    <nav aria-label="Navegacion interna" class="flex flex-wrap items-center gap-3 text-sm text-slate-600">
+      @if (!isCanonicalRoute) {
+        <a class="rounded-full bg-white/75 px-3 py-2 font-medium text-blue-700 ring-1 ring-inset ring-slate-200 transition hover:bg-white hover:text-blue-800" [href]="canonicalUrl">
+          URL optimizada para Google
+        </a>
+      }
+      <a class="rounded-full bg-white/75 px-3 py-2 font-medium transition hover:bg-white hover:text-slate-900" href="#mapa">
+        Ver mapa
+      </a>
+      <a class="rounded-full bg-white/75 px-3 py-2 font-medium transition hover:bg-white hover:text-slate-900" href="#listado">
+        Ver listado
+      </a>
+      <a class="rounded-full bg-white/75 px-3 py-2 font-medium transition hover:bg-white hover:text-slate-900" href="#preguntas-frecuentes">
+        Preguntas frecuentes
+      </a>
+    </nav>
+
     <section class="hero-card overflow-hidden rounded-[28px] border border-white/60 bg-white/80 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.12)] backdrop-blur xl:p-8">
       <div class="mx-auto flex max-w-5xl flex-col gap-5">
         <div class="space-y-5">
@@ -23,10 +40,10 @@
 
           <div class="space-y-3">
             <h1 class="text-3xl font-black tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">
-              Farmacias de turno en Temuco hoy
+              Farmacia de turno en Temuco hoy ({{ shortUpdatedLabel }})
             </h1>
             <p class="max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
-              Revisa primero las farmacias de turno y, si lo necesitas, activa la vista completa para ver tambien las farmacias de Temuco que estan abiertas o cerradas durante la jornada de hoy.
+              Consulta la farmacia de turno en Temuco hoy con direccion, telefono, horario y mapa. Si lo necesitas, tambien puedes revisar las farmacias abiertas ahora y el listado completo del dia.
             </p>
           </div>
 
@@ -49,7 +66,7 @@
             <article class="stat-card">
               <span class="stat-card__label">Abiertas ahora</span>
               <strong class="stat-card__value text-emerald-600">{{ farmaciasAbiertasAhora }}</strong>
-              <span class="stat-card__hint"></span>              
+              <span class="stat-card__hint"></span>
             </article>
           </div>
         </div>
@@ -64,7 +81,7 @@
     }
 
     <section class="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(340px,0.8fr)] xl:items-start">
-      <article class="panel-card overflow-hidden rounded-[28px] border border-slate-200/70 bg-white/85 shadow-[0_24px_60px_rgba(15,23,42,0.10)] backdrop-blur">
+      <article id="mapa" class="panel-card overflow-hidden rounded-[28px] border border-slate-200/70 bg-white/85 shadow-[0_24px_60px_rgba(15,23,42,0.10)] backdrop-blur">
         <div class="border-b border-slate-200/70 px-5 py-4 sm:px-6">
           <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div>
@@ -95,7 +112,7 @@
 
       <div class="space-y-6">
         @if (farmaciasVisibles.length > 0) {
-          <article class="panel-card rounded-[28px] border border-slate-200/70 bg-white/85 p-4 shadow-[0_24px_60px_rgba(15,23,42,0.10)] backdrop-blur sm:p-5">
+          <article id="listado" class="panel-card rounded-[28px] border border-slate-200/70 bg-white/85 p-4 shadow-[0_24px_60px_rgba(15,23,42,0.10)] backdrop-blur sm:p-5">
             <div class="mb-4 flex flex-col gap-3 px-1">
               <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div>
@@ -173,7 +190,7 @@
                       </a>
                     } @else {
                       <span class="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-400">
-                        <span class="material-icons-outlined text-base">call_off</span>                        
+                        <span class="material-icons-outlined text-base">call_off</span>
                       </span>
                     }
 
@@ -218,15 +235,15 @@
 
     <section class="grid gap-6 lg:grid-cols-2">
       <article class="panel-card rounded-[28px] border border-slate-200/70 bg-white/85 p-6 shadow-[0_24px_60px_rgba(15,23,42,0.10)] backdrop-blur">
-        <h2 class="text-2xl font-bold text-slate-950">Como usar este listado de farmacias en Temuco</h2>
+        <h2 class="text-2xl font-bold text-slate-950">Como encontrar una farmacia abierta ahora en Temuco</h2>
         <div class="mt-4 space-y-3 text-sm leading-7 text-slate-600 sm:text-base">
-          <p>Por defecto veras primero las farmacias de turno, que son las mas relevantes para una consulta rapida.</p>
+          <p>Por defecto veras primero la farmacia de turno en Temuco y las demas farmacias de turno disponibles hoy, que suelen ser la respuesta mas util para una consulta urgente.</p>
           <p>Si activas <span class="font-semibold text-emerald-900">Mostrar todas las farmacias del dia</span>, se sumaran tambien las farmacias abiertas o cerradas de hoy en Temuco.</p>
-          <p>El badge verde indica que la farmacia esta abierta a la hora actual y el badge rosado indica que ya esta cerrada.</p>
+          <p>El badge verde indica que la farmacia esta abierta ahora y el badge rosado indica que ya esta cerrada.</p>
         </div>
       </article>
 
-      <article class="panel-card rounded-[28px] border border-slate-200/70 bg-white/85 p-6 shadow-[0_24px_60px_rgba(15,23,42,0.10)] backdrop-blur">
+      <article id="preguntas-frecuentes" class="panel-card rounded-[28px] border border-slate-200/70 bg-white/85 p-6 shadow-[0_24px_60px_rgba(15,23,42,0.10)] backdrop-blur">
         <h2 class="text-2xl font-bold text-slate-950">Preguntas frecuentes</h2>
         <div class="mt-4 space-y-4 text-sm leading-7 text-slate-600 sm:text-base">
           <div>
@@ -243,6 +260,18 @@
           </div>
         </div>
       </article>
+    </section>
+
+    <section class="panel-card rounded-[28px] border border-slate-200/70 bg-white/85 p-6 shadow-[0_24px_60px_rgba(15,23,42,0.10)] backdrop-blur">
+      <h2 class="text-2xl font-bold text-slate-950">Fuente oficial</h2>
+      <div class="mt-4 max-w-3xl text-sm leading-7 text-slate-600 sm:text-base">
+        <p>
+          Los turnos y locales publicados en esta pagina se basan en la informacion oficial del Ministerio de Salud para Temuco.
+          <a class="ml-1 font-semibold text-blue-700 transition hover:text-blue-800 hover:underline" href="https://midas.minsal.cl/farmacia_v2/" target="_blank" rel="noopener noreferrer">
+            Consultar fuente oficial MINSAL
+          </a>
+        </p>
+      </div>
     </section>
   </div>
 </div>

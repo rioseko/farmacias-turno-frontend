@@ -2,6 +2,7 @@ import { CommonModule, DOCUMENT, isPlatformBrowser } from '@angular/common'
 import { ChangeDetectorRef, Component, ElementRef, Inject, OnDestroy, OnInit, ViewChild } from '@angular/core'
 import { PLATFORM_ID } from '@angular/core'
 import { Meta, Title } from '@angular/platform-browser'
+import { Router } from '@angular/router'
 import { Subscription } from 'rxjs'
 import { finalize } from 'rxjs/operators'
 import { environment } from '../../../environments/environment'
@@ -25,6 +26,7 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
   loading = false
   error: string | null = null
   readonly updatedLabel = this.formatLongDate(new Date())
+  readonly shortUpdatedLabel = this.formatShortDate(new Date())
 
   private map?: any
   private infoWindow?: any
@@ -34,8 +36,14 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
   private hideLoadingTimeoutId?: number
   private initialLoadStartedAt = 0
   private readonly fallbackCenter = { lat: -38.735, lng: -72.59 }
-  private readonly canonicalPath = '/'
-  private readonly seoScriptIds = ['seo-webpage-jsonld', 'seo-faq-jsonld', 'seo-itemlist-jsonld']
+  private readonly canonicalPath = environment.seoPath
+  private readonly seoScriptIds = [
+    'seo-webpage-jsonld',
+    'seo-faq-jsonld',
+    'seo-itemlist-jsonld',
+    'seo-website-jsonld',
+    'seo-breadcrumb-jsonld',
+  ]
   private readonly isBrowser: boolean
   private readonly minimumInitialLoadingMs = 1200
 
@@ -45,6 +53,7 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private title: Title,
     private meta: Meta,
+    private router: Router,
     @Inject(DOCUMENT) private document: Document,
     @Inject(PLATFORM_ID) platformId: object
   ) {
@@ -120,15 +129,23 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
   }
 
   get visibleListTitle(): string {
-    return this.mostrarTodas ? 'Farmacias del día en Temuco' : 'Farmacias de turno en Temuco'
+    return this.mostrarTodas ? 'Farmacias del dia en Temuco' : 'Farmacias de turno en Temuco'
   }
 
   get seoDescription(): string {
     if (this.farmacias.length > 0) {
-      return `Consulta ${this.farmaciasDeTurno.length} farmacias de turno y ${this.farmaciasAbiertasAhora} farmacias abiertas ahora en Temuco, con mapa, direccion, telefono y horario actualizado.`
+      return `Consulta ${this.farmaciasDeTurno.length} farmacias de turno y ${this.farmaciasAbiertasAhora} farmacias abiertas ahora en Temuco hoy ${this.shortUpdatedLabel}, con mapa, direccion, telefono y horario actualizado.`
     }
 
-    return 'Consulta las farmacias de turno y las farmacias abiertas hoy en Temuco con mapa, direccion, telefono y horarios actualizados.'
+    return `Consulta la farmacia de turno en Temuco hoy ${this.shortUpdatedLabel}, con mapa, direccion, telefono, horario y listado de farmacias abiertas ahora.`
+  }
+
+  get canonicalUrl(): string {
+    return this.buildCanonicalUrl()
+  }
+
+  get isCanonicalRoute(): boolean {
+    return this.router.url === this.canonicalPath
   }
 
   trackFarmacia(_index: number, farmacia: Farmacia): string {
@@ -299,21 +316,25 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
   }
 
   private updateSeo(): void {
-    const pageTitle = 'Farmacias de turno en Temuco hoy | Turno y abiertas ahora'
-    const canonicalUrl = this.buildCanonicalUrl()
+    const pageTitle = `Farmacia de turno en Temuco hoy (${this.shortUpdatedLabel}) | Abierta ahora`
+    const canonicalUrl = this.canonicalUrl
     const description = this.seoDescription
 
     this.title.setTitle(pageTitle)
     this.setMetaTag('name', 'description', description)
     this.setMetaTag('name', 'robots', 'index,follow,max-image-preview:large')
+    this.setMetaTag('name', 'author', 'farmaciastemuco.cl')
+    this.setMetaTag('name', 'theme-color', '#0f172a')
     this.setMetaTag('property', 'og:title', pageTitle)
     this.setMetaTag('property', 'og:description', description)
     this.setMetaTag('property', 'og:type', 'website')
     this.setMetaTag('property', 'og:locale', 'es_CL')
     this.setMetaTag('property', 'og:url', canonicalUrl)
+    this.setMetaTag('property', 'og:image', `${environment.siteUrl}/logo.png`)
     this.setMetaTag('name', 'twitter:card', 'summary_large_image')
     this.setMetaTag('name', 'twitter:title', pageTitle)
     this.setMetaTag('name', 'twitter:description', description)
+    this.setMetaTag('name', 'twitter:image', `${environment.siteUrl}/logo.png`)
     this.updateCanonical(canonicalUrl)
     this.updateStructuredData(canonicalUrl, description)
   }
@@ -340,12 +361,39 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
     const webpage = {
       '@context': 'https://schema.org',
       '@type': 'WebPage',
-      name: 'Farmacias de turno en Temuco hoy',
+      name: `Farmacia de turno en Temuco hoy (${this.shortUpdatedLabel})`,
       description,
       url: canonicalUrl,
       inLanguage: 'es-CL',
       about: 'Farmacias de turno y farmacias abiertas hoy en Temuco',
       dateModified: new Date().toISOString(),
+    }
+
+    const website = {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: 'farmaciastemuco.cl',
+      url: environment.siteUrl,
+      inLanguage: 'es-CL',
+    }
+
+    const breadcrumb = {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        {
+          '@type': 'ListItem',
+          position: 1,
+          name: 'Inicio',
+          item: environment.siteUrl,
+        },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: 'Farmacia de turno en Temuco',
+          item: canonicalUrl,
+        },
+      ],
     }
 
     const faq = {
@@ -390,8 +438,14 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
         item: {
           '@type': 'Pharmacy',
           name: farmacia.nombre,
-          address: farmacia.direccion || 'Temuco',
+          address: {
+            '@type': 'PostalAddress',
+            streetAddress: farmacia.direccion || 'No informado',
+            addressLocality: 'Temuco',
+            addressCountry: 'CL',
+          },
           telephone: farmacia.telefono || undefined,
+          openingHours: farmacia.horario || undefined,
         },
       })),
     }
@@ -399,6 +453,8 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
     this.appendStructuredData(this.seoScriptIds[0], webpage)
     this.appendStructuredData(this.seoScriptIds[1], faq)
     this.appendStructuredData(this.seoScriptIds[2], itemList)
+    this.appendStructuredData(this.seoScriptIds[3], website)
+    this.appendStructuredData(this.seoScriptIds[4], breadcrumb)
   }
 
   private appendStructuredData(id: string, payload: unknown): void {
@@ -414,8 +470,7 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
   }
 
   private buildCanonicalUrl(): string {
-    const origin = this.document.location?.origin ?? ''
-    return `${origin}${this.canonicalPath}`
+    return `${environment.siteUrl}${this.canonicalPath}`
   }
 
   private buildInfoWindowContent(farmacia: Farmacia): string {
@@ -454,6 +509,15 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
   }
 
   private formatLongDate(date: Date): string {
+    return new Intl.DateTimeFormat('es-CL', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      timeZone: 'America/Santiago',
+    }).format(date)
+  }
+
+  private formatShortDate(date: Date): string {
     return new Intl.DateTimeFormat('es-CL', {
       day: 'numeric',
       month: 'long',

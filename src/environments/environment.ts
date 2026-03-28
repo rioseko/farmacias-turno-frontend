@@ -1,5 +1,7 @@
 export const environment = {
   production: false,
+  siteUrl: 'https://farmaciastemuco.cl',
+  seoPath: '/farmacia-de-turno-temuco',
   googleMapsApiKey: '',
   googleMapsMapId: '',
   // En local usamos el proxy configurado en proxy.conf.json.

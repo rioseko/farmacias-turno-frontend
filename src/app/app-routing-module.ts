@@ -4,6 +4,7 @@ import { FarmaciasPageComponent } from './pages/farmacias-page/farmacias-page.co
 
 const routes: Routes = [
   { path: '', component: FarmaciasPageComponent },
+  { path: 'farmacia-de-turno-temuco', component: FarmaciasPageComponent },
 ]
 
 @NgModule({
