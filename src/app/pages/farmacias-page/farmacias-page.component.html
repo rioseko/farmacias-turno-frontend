@@ -13,6 +13,25 @@
   <div class="page-orb page-orb--secondary"></div>
 
   <div class="relative mx-auto flex max-w-7xl flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+    <!-- Semantic Breadcrumbs for SEO -->
+    <nav aria-label="Breadcrumb" class="text-sm">
+      <ol class="flex items-center gap-2 text-slate-500" itemscope itemtype="https://schema.org/BreadcrumbList">
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <a itemprop="item" href="/" class="hover:text-blue-700 hover:underline">
+            <span itemprop="name">Inicio</span>
+          </a>
+          <meta itemprop="position" content="1">
+        </li>
+        <li class="flex items-center gap-2">
+          <span aria-hidden="true" class="text-slate-300">/</span>
+        </li>
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem" class="text-slate-700 font-medium">
+          <span itemprop="name">Farmacia de turno en Temuco</span>
+          <meta itemprop="position" content="2">
+        </li>
+      </ol>
+    </nav>
+
     <nav aria-label="Navegacion interna" class="flex flex-wrap items-center gap-3 text-sm text-slate-600">
       @if (!isCanonicalRoute) {
         <a class="rounded-full bg-white/75 px-3 py-2 font-medium text-blue-700 ring-1 ring-inset ring-slate-200 transition hover:bg-white hover:text-blue-800" [href]="canonicalUrl">

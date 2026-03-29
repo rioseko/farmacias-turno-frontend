@@ -43,6 +43,8 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
     'seo-itemlist-jsonld',
     'seo-website-jsonld',
     'seo-breadcrumb-jsonld',
+    'seo-localbusiness-jsonld',
+    'seo-organization-jsonld',
   ]
   private readonly isBrowser: boolean
   private readonly minimumInitialLoadingMs = 1200
@@ -146,6 +148,38 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
 
   get isCanonicalRoute(): boolean {
     return this.router.url === this.canonicalPath
+  }
+
+  // Dynamic Open Graph getters for SEO
+  get openGraphTitle(): string {
+    if (this.farmaciasDeTurno.length > 0) {
+      const turnoPart = `${this.farmaciasDeTurno.length} farmacias de turno`
+      const abiertasPart = this.farmaciasAbiertasAhora > 0
+        ? ` + ${this.farmaciasAbiertasAhora} abiertas ahora`
+        : ''
+      return `${turnoPart}${abiertasPart} en Temuco hoy`
+    }
+    const abiertasPart = this.farmaciasAbiertasAhora > 0
+      ? ` - ${this.farmaciasAbiertasAhora} farmacias abiertas ahora`
+      : ''
+    return `Farmacias${abiertasPart} en Temuco hoy (${this.shortUpdatedLabel})`
+  }
+
+  get openGraphDescription(): string {
+    if (this.farmaciasDeTurno.length > 0) {
+      const primeraFarmacia = this.farmaciasDeTurno[0]?.nombre || 'la farmacia de turno'
+      const adicionales = this.farmaciasDeTurno.length > 1
+        ? ` Ademas hay ${this.farmaciasDeTurno.length - 1} farmacias de turno mas.`
+        : ''
+      const abiertasPart = this.farmaciasAbiertasAhora > 0
+        ? ` ${this.farmaciasAbiertasAhora} farmacias abiertas ahora.`
+        : ''
+      return `${primeraFarmacia} de turno en Temuco.${adicionales}${abiertasPart} Ver mapa, direccion, telefono y horario.`
+    }
+    if (this.farmaciasAbiertasAhora > 0) {
+      return `${this.farmaciasAbiertasAhora} farmacias abiertas ahora en Temuco. Revisa mapa, direccion y telefono de cada una.`
+    }
+    return `No hay farmacias abiertas ahora en Temuco. Consulta el listado completo y prepara tu visita cuando abran.`
   }
 
   trackFarmacia(_index: number, farmacia: Farmacia): string {
@@ -320,22 +354,28 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
     const canonicalUrl = this.canonicalUrl
     const description = this.seoDescription
 
+    // Use dynamic Open Graph meta tags for better social sharing
+    const ogTitle = this.openGraphTitle
+    const ogDescription = this.openGraphDescription
+
     this.title.setTitle(pageTitle)
     this.setMetaTag('name', 'description', description)
     this.setMetaTag('name', 'robots', 'index,follow,max-image-preview:large')
     this.setMetaTag('name', 'author', 'farmaciastemuco.cl')
     this.setMetaTag('name', 'theme-color', '#0f172a')
-    this.setMetaTag('property', 'og:title', pageTitle)
-    this.setMetaTag('property', 'og:description', description)
+    this.setMetaTag('property', 'og:title', ogTitle)
+    this.setMetaTag('property', 'og:description', ogDescription)
     this.setMetaTag('property', 'og:type', 'website')
     this.setMetaTag('property', 'og:locale', 'es_CL')
     this.setMetaTag('property', 'og:url', canonicalUrl)
     this.setMetaTag('property', 'og:image', `${environment.siteUrl}/logo.png`)
+    this.setMetaTag('property', 'og:site_name', 'Farmacias de Turno Temuco')
     this.setMetaTag('name', 'twitter:card', 'summary_large_image')
-    this.setMetaTag('name', 'twitter:title', pageTitle)
-    this.setMetaTag('name', 'twitter:description', description)
+    this.setMetaTag('name', 'twitter:title', ogTitle)
+    this.setMetaTag('name', 'twitter:description', ogDescription)
     this.setMetaTag('name', 'twitter:image', `${environment.siteUrl}/logo.png`)
     this.updateCanonical(canonicalUrl)
+    this.updateHreflang(canonicalUrl)
     this.updateStructuredData(canonicalUrl, description)
   }
 
@@ -353,6 +393,27 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
     }
 
     canonical.href = url
+  }
+
+  private updateHreflang(canonicalUrl: string): void {
+    // Remove existing hreflang tags
+    const existingTags = this.document.querySelectorAll('link[rel="alternate"][hreflang]')
+    existingTags.forEach((tag) => tag.remove())
+
+    // Add hreflang for es-CL (Chilean Spanish)
+    const hreflangEsCL = this.document.createElement('link')
+    hreflangEsCL.rel = 'alternate'
+    hreflangEsCL.hreflang = 'es-CL'
+    hreflangEsCL.href = canonicalUrl
+
+    // Add x-default hreflang for international users
+    const hreflangDefault = this.document.createElement('link')
+    hreflangDefault.rel = 'alternate'
+    hreflangDefault.hreflang = 'x-default'
+    hreflangDefault.href = canonicalUrl
+
+    this.document.head.appendChild(hreflangEsCL)
+    this.document.head.appendChild(hreflangDefault)
   }
 
   private updateStructuredData(canonicalUrl: string, description: string): void {
@@ -455,6 +516,67 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
     this.appendStructuredData(this.seoScriptIds[2], itemList)
     this.appendStructuredData(this.seoScriptIds[3], website)
     this.appendStructuredData(this.seoScriptIds[4], breadcrumb)
+
+    // Organization Schema
+    const organization = {
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      name: 'Farmacias de Turno Temuco',
+      url: environment.siteUrl,
+      logo: `${environment.siteUrl}/logo.png`,
+      sameAs: [
+        'https://midas.minsal.cl/farmacia_v2/',
+      ],
+      contactPoint: {
+        '@type': 'ContactPoint',
+        contactType: 'customer service',
+        availableLanguage: 'Spanish',
+        areaServed: {
+          '@type': 'City',
+          name: 'Temuco',
+        },
+      },
+    }
+
+    // LocalBusiness Schema for the pharmacy directory service
+    const localBusiness = {
+      '@context': 'https://schema.org',
+      '@type': 'LocalBusiness',
+      name: 'Farmacias de Turno Temuco',
+      description: `Directorio de farmacias de turno y farmacias abiertas ahora en Temuco. ${this.farmaciasDeTurno.length} farmacias de turno disponibles.`,
+      url: canonicalUrl,
+      image: `${environment.siteUrl}/logo.png`,
+      telephone: '+56452000000',
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: 'Temuco',
+        addressRegion: 'Araucania',
+        addressCountry: 'CL',
+      },
+      geo: {
+        '@type': 'GeoCoordinates',
+        latitude: -38.735,
+        longitude: -72.59,
+      },
+      openingHoursSpecification: this.farmaciasDeTurno.length > 0 ? [
+        {
+          '@type': 'OpeningHoursSpecification',
+          dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+          opens: '00:00',
+          closes: '23:59',
+          description: 'Directorio disponible 24/7. Las farmacias de turno rotan diariamente.',
+        },
+      ] : undefined,
+      priceRange: '$$',
+      servesCuisine: 'Farmacia',
+      areaServed: {
+        '@type': 'City',
+        name: 'Temuco',
+      },
+    }
+
+    this.appendStructuredData(this.seoScriptIds[5], localBusiness)
+    this.appendStructuredData(this.seoScriptIds[6], organization)
   }
 
   private appendStructuredData(id: string, payload: unknown): void {
