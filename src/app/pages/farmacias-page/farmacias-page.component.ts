@@ -142,6 +142,14 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
     return `Consulta la farmacia de turno en Temuco hoy ${this.shortUpdatedLabel}, con mapa, direccion, telefono, horario y listado de farmacias abiertas ahora.`
   }
 
+  get pageDateLabel(): string {
+    return new Intl.DateTimeFormat('es-CL', {
+      day: 'numeric',
+      month: 'long',
+      timeZone: 'America/Santiago',
+    }).format(new Date())
+  }
+
   get canonicalUrl(): string {
     return this.buildCanonicalUrl()
   }
@@ -350,7 +358,7 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
   }
 
   private updateSeo(): void {
-    const pageTitle = `Farmacia de turno en Temuco hoy (${this.shortUpdatedLabel}) | Abierta ahora`
+    const pageTitle = `Farmacias de turno Temuco hoy ${this.pageDateLabel}`
     const canonicalUrl = this.canonicalUrl
     const description = this.seoDescription
 
