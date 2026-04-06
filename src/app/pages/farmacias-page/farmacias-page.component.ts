@@ -273,6 +273,17 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges()
   }
 
+  showAllFarmacias(): void {
+    if (this.mostrarTodas) {
+      return
+    }
+
+    this.mostrarTodas = true
+    this.renderMarkers()
+    this.updateSeo()
+    this.cdr.detectChanges()
+  }
+
   private async initializePage(): Promise<void> {
     if (!this.isBrowser) {
       this.load()

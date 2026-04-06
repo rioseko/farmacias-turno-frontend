@@ -1,8 +1,8 @@
 <a class="skip-link" href="#contenido-principal">Saltar al contenido principal</a>
 
 <div class="page-shell min-h-[100dvh] text-[#111111]">
-  <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
-    <header class="pb-16">
+  <div class="mx-auto max-w-[88rem] px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
+    <header class="pb-5">
       <nav aria-label="Breadcrumb" class="text-sm">
         <ol class="flex flex-wrap items-center gap-2 text-[#787774]" itemscope itemtype="https://schema.org/BreadcrumbList">
           <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
@@ -19,13 +19,24 @@
         </ol>
       </nav>
 
-      <div class="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.8fr)] xl:items-start">
-        <div class="max-w-4xl">
-          <p class="eyebrow">Temuco / informacion del dia</p>
+      <div class="hero-layout mt-6 grid gap-6 xl:items-start">
+        <div class="hero-intro">
+          <p class="eyebrow">Temuco / Información del dia {{ pageDateLabel }}</p>
           <h1 class="hero-title">Farmacias de turno y farmacias abiertas hoy {{ pageDateLabel }} en Temuco.</h1>
           <p class="hero-copy">
             Consulta primero la farmacia de turno y luego confirma direccion, telefono, horario y mapa. La pagina esta pensada para responder rapido cuando necesitas decidir desde el telefono.
           </p>
+
+          <div class="hero-metrics" aria-label="Resumen del dia">
+            <article class="summary-box summary-box--hero">
+              <span>De turno</span>
+              <strong>{{ farmaciasDeTurno.length }}</strong>
+            </article>
+            <article class="summary-box summary-box--hero">
+              <span>Abiertas ahora</span>
+              <strong>{{ farmaciasAbiertasAhora }}</strong>
+            </article>
+          </div>
 
           <nav aria-label="Navegacion interna" class="hero-links">
             <a class="subtle-link" href="#mapa" (click)="scrollToSection($event, 'mapa')">Ver mapa</a>
@@ -34,7 +45,7 @@
           </nav>
         </div>
 
-        <aside class="hero-sheet">
+        <aside class="hero-sheet hero-sheet--priority">
           <p class="eyebrow">Resumen</p>
 
           @if (loading && farmacias.length === 0) {
@@ -66,12 +77,25 @@
                 <h2 class="priority-note__title">{{ farmaciasDeTurno[0].nombre }}</h2>
                 <p class="priority-note__text">{{ farmaciasDeTurno[0].direccion || 'Direccion no informada' }}</p>
 
-                <div class="priority-note__actions">
-                  @if (farmaciasDeTurno[0].telefono) {
-                    <a class="action-button action-button--primary" href="tel:{{ cleanPhone(farmaciasDeTurno[0].telefono) }}">Llamar</a>
+                 <div class="priority-note__actions">
+                   @if (farmaciasDeTurno[0].telefono) {
+                    <a class="action-button action-button--primary" href="tel:{{ cleanPhone(farmaciasDeTurno[0].telefono) }}">
+                      <span class="button-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" focusable="false">
+                          <path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.01-.24c1.11.37 2.29.56 3.5.56a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C10.85 21 3 13.15 3 3.99a1 1 0 0 1 1-1H7.5a1 1 0 0 1 1 1c0 1.21.19 2.39.56 3.5a1 1 0 0 1-.24 1.01l-2.2 2.29Z" fill="currentColor" />
+                        </svg>
+                      </span>
+                      <span>Llamar</span>
+                    </a>
                   }
                     <a class="action-button action-button--secondary" href="#listado" (click)="scrollToSection($event, 'listado')">Ver listado</a>
+                 </div>
                 </div>
+            } @else {
+              <div class="priority-note priority-note--muted">
+                <p class="priority-note__label">Sin prioridad visible</p>
+                <h2 class="priority-note__title">Revisa el listado completo del dia</h2>
+                <p class="priority-note__text">Si hoy no aparece una farmacia marcada como de turno, puedes mirar todas las farmacias disponibles y usar el mapa para ubicar la mas cercana.</p>
               </div>
             }
           }
@@ -81,7 +105,11 @@
 
     @if (error) {
       <div class="status-banner status-banner--error">
-        <span>No se pudo cargar la informacion.</span>
+        <div>
+          <strong>No se pudo cargar la informacion.</strong>
+          <p>Intenta nuevamente para recuperar el listado y el mapa del dia.</p>
+        </div>
+        <button type="button" class="action-button action-button--secondary" (click)="load()">Reintentar</button>
       </div>
     }
 
@@ -178,15 +206,34 @@
                   <dl class="info-list">
                     <div class="info-list__row">
                       <dt>Horario</dt>
-                      <dd>{{ formatHorario(f.horario) || 'No informado' }}</dd>
+                      <dd>
+                        <span class="info-value-icon" aria-hidden="true">
+                          <svg viewBox="0 0 24 24" focusable="false">
+                            <path d="M12 6.5a1 1 0 0 1 1 1V12l2.8 1.68a1 1 0 1 1-1.02 1.72l-3.28-1.97A1 1 0 0 1 11 12V7.5a1 1 0 0 1 1-1Zm0-4.5a10 10 0 1 1 0 20 10 10 0 0 1 0-20Zm0 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Z" fill="currentColor" />
+                          </svg>
+                        </span>
+                        <span>{{ formatHorario(f.horario) || 'No informado' }}</span>
+                      </dd>
                     </div>
                     <div class="info-list__row">
                       <dt>Direccion</dt>
-                      <dd>{{ f.direccion || 'No informada' }}</dd>
+                      <dd>
+                        <span class="info-value-icon" aria-hidden="true">
+                          <svg viewBox="0 0 24 24" focusable="false">
+                            <path d="M12 2a6 6 0 0 1 6 6c0 4.15-4.55 10.43-5.46 11.65a.67.67 0 0 1-1.08 0C10.55 18.43 6 12.15 6 8a6 6 0 0 1 6-6Zm0 8.5A2.5 2.5 0 1 0 12 5.5a2.5 2.5 0 0 0 0 5Z" fill="currentColor" />
+                          </svg>
+                        </span>
+                        <span>{{ f.direccion || 'No informada' }}</span>
+                      </dd>
                     </div>
                     <div class="info-list__row">
                       <dt>Telefono</dt>
                       <dd>
+                        <span class="info-value-icon" aria-hidden="true">
+                          <svg viewBox="0 0 24 24" focusable="false">
+                            <path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.01-.24c1.11.37 2.29.56 3.5.56a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C10.85 21 3 13.15 3 3.99a1 1 0 0 1 1-1H7.5a1 1 0 0 1 1 1c0 1.21.19 2.39.56 3.5a1 1 0 0 1-.24 1.01l-2.2 2.29Z" fill="currentColor" />
+                          </svg>
+                        </span>
                         @if (f.telefono) {
                           <a class="inline-link" href="tel:{{ cleanPhone(f.telefono) }}">{{ f.telefono }}</a>
                         } @else {
@@ -198,7 +245,14 @@
 
                   <div class="pharmacy-card__actions">
                     @if (f.telefono) {
-                      <a class="action-button action-button--primary" href="tel:{{ cleanPhone(f.telefono) }}">Llamar</a>
+                      <a class="action-button action-button--primary" href="tel:{{ cleanPhone(f.telefono) }}">
+                        <span class="button-icon" aria-hidden="true">
+                          <svg viewBox="0 0 24 24" focusable="false">
+                            <path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.01-.24c1.11.37 2.29.56 3.5.56a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C10.85 21 3 13.15 3 3.99a1 1 0 0 1 1-1H7.5a1 1 0 0 1 1 1c0 1.21.19 2.39.56 3.5a1 1 0 0 1-.24 1.01l-2.2 2.29Z" fill="currentColor" />
+                          </svg>
+                        </span>
+                        <span>Llamar</span>
+                      </a>
                     } @else {
                       <span class="action-button action-button--disabled">Telefono no informado</span>
                     }
@@ -209,7 +263,12 @@
                       [class.action-button--disabled]="f.lat === null || f.lng === null"
                       [disabled]="f.lat === null || f.lng === null"
                       (click)="focusFarmaciaOnMap(f)">
-                      {{ f.lat !== null && f.lng !== null ? 'Ver mapa' : 'Sin pin disponible' }}
+                      <span class="button-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" focusable="false">
+                          <path d="M15 5.76 9 3 3 5.76v14.48l6-2.76 6 2.76 6-2.76V3l-6 2.76Zm0 2.2 4-1.84v9.84l-4 1.84V7.96ZM5 6.12l3-1.38v9.84l-3 1.38V6.12Zm5 8.46V4.74l4 1.84v9.84l-4-1.84Z" fill="currentColor" />
+                        </svg>
+                      </span>
+                      <span>{{ f.lat !== null && f.lng !== null ? 'Ver mapa' : 'Sin ubicación disponible' }}</span>
                     </button>
                   </div>
                 </li>
@@ -220,8 +279,10 @@
               <h2 class="section-title">No hay farmacias para mostrar</h2>
               @if (!mostrarTodas && farmacias.length > 0) {
                 <p class="section-copy">Activa la vista completa para revisar tambien las farmacias abiertas o cerradas del dia en Temuco.</p>
+                <button type="button" class="action-button action-button--secondary" (click)="showAllFarmacias()">Mostrar todas las farmacias del dia</button>
               } @else {
                 <p class="section-copy">Intenta nuevamente en unos minutos para revisar si hay nuevos locales disponibles para Temuco.</p>
+                <button type="button" class="action-button action-button--secondary" (click)="load()">Actualizar listado</button>
               }
             </div>
           }
@@ -261,14 +322,21 @@
         </section>
       </section>
 
-      <section class="source-block">
-        <p class="eyebrow">Fuente oficial</p>
-        <h2 class="section-title">Informacion publicada para Temuco</h2>
-        <p class="section-copy">
-          Los turnos y locales publicados en esta pagina se basan en la informacion oficial del Ministerio de Salud para Temuco.
-          <a class="inline-link" href="https://datos.gob.cl/dataset/farmacias-en-chile/resource/df03f68f-ea2e-4430-adad-3e34cab332b7" target="_blank" rel="noopener noreferrer">Consultar fuente oficial MINSAL</a>
-        </p>
-      </section>
+      <footer class="source-block">
+        <div>
+          <p class="eyebrow">Fuente oficial</p>
+          <h2 class="section-title">Informacion publicada para Temuco</h2>
+          <p class="section-copy">
+            Los turnos y locales publicados en esta pagina se basan en la informacion oficial del Ministerio de Salud para Temuco.
+            <a class="inline-link" href="https://datos.gob.cl/dataset/farmacias-en-chile/resource/df03f68f-ea2e-4430-adad-3e34cab332b7" target="_blank" rel="noopener noreferrer">Consultar fuente oficial MINSAL</a>
+          </p>
+        </div>
+
+        <nav class="footer-links" aria-label="Enlaces de apoyo">
+          <a class="subtle-link" href="#contenido-principal" (click)="scrollToSection($event, 'contenido-principal')">Volver al contenido</a>
+          <a class="subtle-link" href="#mapa" (click)="scrollToSection($event, 'mapa')">Ir al mapa</a>
+        </nav>
+      </footer>
     </main>
   </div>
 </div>
