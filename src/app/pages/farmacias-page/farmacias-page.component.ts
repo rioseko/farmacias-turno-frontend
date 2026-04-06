@@ -34,6 +34,7 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
   private markerByFarmacia = new Map<string, any>()
   private sub?: Subscription
   private hideLoadingTimeoutId?: number
+  private scrollAnimationFrameId?: number
   private initialLoadStartedAt = 0
   private readonly fallbackCenter = { lat: -38.735, lng: -72.59 }
   private readonly canonicalPath = environment.seoPath
@@ -72,6 +73,9 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
     this.sub?.unsubscribe()
     if (this.hideLoadingTimeoutId) {
       window.clearTimeout(this.hideLoadingTimeoutId)
+    }
+    if (this.scrollAnimationFrameId) {
+      window.cancelAnimationFrame(this.scrollAnimationFrameId)
     }
     this.clearMarkers()
     this.removeStructuredData()
@@ -143,11 +147,16 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
   }
 
   get pageDateLabel(): string {
-    return new Intl.DateTimeFormat('es-CL', {
-      day: 'numeric',
+    const parts = new Intl.DateTimeFormat('es-CL', {
+      day: '2-digit',
       month: 'long',
       timeZone: 'America/Santiago',
-    }).format(new Date())
+    }).formatToParts(new Date())
+
+    const day = parts.find((part) => part.type === 'day')?.value ?? ''
+    const month = parts.find((part) => part.type === 'month')?.value ?? ''
+
+    return `${day} de ${month}`.trim()
   }
 
   get canonicalUrl(): string {
@@ -237,10 +246,23 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
       })
     }
 
-    this.mapEl.nativeElement.scrollIntoView({
-      behavior: 'smooth',
-      block: 'center',
-    })
+    this.animateScrollToElement(this.mapEl.nativeElement, 'center')
+  }
+
+  scrollToSection(event: Event, sectionId: string): void {
+    if (!this.isBrowser) {
+      return
+    }
+
+    event.preventDefault()
+
+    const target = this.document.getElementById(sectionId)
+    if (!target) {
+      return
+    }
+
+    this.animateScrollToElement(target)
+    window.history.replaceState(null, '', `#${sectionId}`)
   }
 
   toggleMostrarTodas(event: Event): void {
@@ -629,6 +651,44 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
     return farmacia.id || `${farmacia.nombre}-${farmacia.direccion}`
   }
 
+  private animateScrollToElement(element: HTMLElement, block: ScrollLogicalPosition = 'start'): void {
+    if (!this.isBrowser) {
+      return
+    }
+
+    const startY = window.scrollY
+    const elementRect = element.getBoundingClientRect()
+    const targetY = block === 'center'
+      ? startY + elementRect.top - Math.max((window.innerHeight - elementRect.height) / 2, 24)
+      : startY + elementRect.top - 24
+
+    const distance = targetY - startY
+    const duration = 360
+    const startTime = performance.now()
+
+    if (this.scrollAnimationFrameId) {
+      window.cancelAnimationFrame(this.scrollAnimationFrameId)
+    }
+
+    const easeOutCubic = (progress: number) => 1 - Math.pow(1 - progress, 3)
+
+    const step = (currentTime: number) => {
+      const elapsed = currentTime - startTime
+      const progress = Math.min(elapsed / duration, 1)
+      const eased = easeOutCubic(progress)
+
+      window.scrollTo({ top: startY + distance * eased, behavior: 'auto' })
+
+      if (progress < 1) {
+        this.scrollAnimationFrameId = window.requestAnimationFrame(step)
+      } else {
+        this.scrollAnimationFrameId = undefined
+      }
+    }
+
+    this.scrollAnimationFrameId = window.requestAnimationFrame(step)
+  }
+
   private escapeHtml(value: string): string {
     return String(value)
       .replace(/&/g, '&amp;')
@@ -640,7 +700,7 @@ export class FarmaciasPageComponent implements OnInit, OnDestroy {
 
   private formatLongDate(date: Date): string {
     return new Intl.DateTimeFormat('es-CL', {
-      day: 'numeric',
+      day: '2-digit',
       month: 'long',
       year: 'numeric',
       timeZone: 'America/Santiago',

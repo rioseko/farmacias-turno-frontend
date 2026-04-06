@@ -2,7 +2,20 @@
 <html lang="es-CL">
 <head>
   <meta charset="utf-8">
-  <title>Farmacia de turno en Temuco hoy | Abierta ahora y mapa</title>
+  <title>Farmacias de turno Temuco hoy</title>
+  <script>
+    (function () {
+      var formatter = new Intl.DateTimeFormat('es-CL', {
+        day: '2-digit',
+        month: 'long',
+        timeZone: 'America/Santiago'
+      });
+      var parts = formatter.formatToParts(new Date());
+      var day = parts.find(function (part) { return part.type === 'day'; })?.value || '';
+      var month = parts.find(function (part) { return part.type === 'month'; })?.value || '';
+      document.title = 'Farmacias de turno Temuco hoy ' + day + ' de ' + month;
+    })();
+  </script>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Consulta la farmacia de turno en Temuco hoy en Temuco con direccion, telefono, horario, mapa y farmacias abiertas ahora actualizadas.">
