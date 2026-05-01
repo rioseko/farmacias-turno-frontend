@@ -9,13 +9,14 @@ import { environment } from '../../../environments/environment'
 import { Farmacia } from '../../models/farmacia'
 import { FarmaciasService } from '../../services/farmacias.service'
 import { GoogleMapsLoaderService } from '../../services/google-maps-loader.service'
+import { ThemeToggleComponent } from '../../components/theme-toggle/theme-toggle.component'
 
 @Component({
   selector: 'app-farmacias-page',
   templateUrl: './farmacias-page.component.html',
   styleUrls: ['./farmacias-page.component.scss'],
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ThemeToggleComponent],
 })
 export class FarmaciasPageComponent implements OnInit, OnDestroy {
   @ViewChild('map', { static: true }) mapEl!: ElementRef<HTMLDivElement>

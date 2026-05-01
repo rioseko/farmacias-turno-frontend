@@ -1,27 +1,5 @@
 :host {
   display: block;
-  --canvas: #edf3f8;
-  --canvas-deep: #dfe9f2;
-  --surface: rgba(255, 255, 255, 0.84);
-  --surface-strong: #ffffff;
-  --surface-muted: #f4f7fb;
-  --border: rgba(86, 108, 136, 0.16);
-  --border-strong: rgba(40, 67, 101, 0.22);
-  --text: #142235;
-  --text-soft: #26415f;
-  --muted: #5f7288;
-  --accent: #376ea8;
-  --accent-deep: #214d7b;
-  --shadow-soft: 0 20px 48px rgba(26, 55, 92, 0.08);
-  --shadow-card: 0 14px 32px rgba(30, 58, 90, 0.08);
-  --pale-red: #fbe8ea;
-  --pale-red-text: #8f3a45;
-  --pale-blue: #e3effc;
-  --pale-blue-text: #285788;
-  --pale-green: #e7f4ee;
-  --pale-green-text: #2d6954;
-  --pale-yellow: #f7efd8;
-  --pale-yellow-text: #8b6a1d;
   color: var(--text);
 }
 
@@ -53,6 +31,14 @@
     radial-gradient(circle at top left, rgba(55, 110, 168, 0.1), transparent 30%),
     radial-gradient(circle at 88% 8%, rgba(32, 77, 123, 0.1), transparent 22%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0)),
+    var(--canvas);
+}
+
+:host-context(.dark) .page-shell {
+  background:
+    radial-gradient(circle at top left, rgba(96, 165, 250, 0.06), transparent 30%),
+    radial-gradient(circle at 88% 8%, rgba(59, 130, 246, 0.06), transparent 22%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0)),
     var(--canvas);
 }
 
@@ -125,6 +111,13 @@
   flex-wrap: wrap;
   gap: 0.75rem;
   margin-top: 1.5rem;
+}
+
+.breadcrumb-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
 }
 
 .hero-intro {
@@ -230,6 +223,10 @@
   padding: 0.75rem;
 }
 
+:host-context(.dark) .map-frame {
+  background: linear-gradient(180deg, rgba(30, 30, 30, 0.84), rgba(20, 20, 20, 0.92));
+}
+
 .map-wrap {
   position: relative;
 }
@@ -264,6 +261,10 @@
     transform 0.24s cubic-bezier(0.16, 1, 0.3, 1),
     border-color 0.24s ease,
     box-shadow 0.24s ease;
+}
+
+:host-context(.dark) .pharmacy-card {
+  background: rgba(30, 30, 30, 0.76);
 }
 
 .pharmacy-card:hover {

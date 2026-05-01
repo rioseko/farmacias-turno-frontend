@@ -16,6 +16,16 @@
       document.title = 'Farmacias de turno Temuco hoy ' + day + ' de ' + month;
     })();
   </script>
+  <script>
+    (function() {
+      try {
+        var t = localStorage.getItem('theme');
+        if (t === 'dark') {
+          document.documentElement.classList.add('dark');
+        }
+      } catch(e) {}
+    })();
+  </script>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Consulta la farmacia de turno en Temuco hoy en Temuco con direccion, telefono, horario, mapa y farmacias abiertas ahora actualizadas.">

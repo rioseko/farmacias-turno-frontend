@@ -1,23 +1,24 @@
 <a class="skip-link" href="#contenido-principal">Saltar al contenido principal</a>
 
-<div class="page-shell min-h-[100dvh] text-[#111111]">
+<div class="page-shell min-h-[100dvh] text-[#111111] dark:text-[#e4e4e7]">
   <div class="mx-auto max-w-[88rem] px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
     <header class="pb-5">
-      <nav aria-label="Breadcrumb" class="text-sm">
-        <ol class="flex flex-wrap items-center gap-2 text-[#787774]" itemscope itemtype="https://schema.org/BreadcrumbList">
-          <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-            <a itemprop="item" href="/" class="transition hover:text-[#111111] hover:underline">
-              <span itemprop="name">Inicio</span>
-            </a>
-            <meta itemprop="position" content="1">
-          </li>
-          <li aria-hidden="true">/</li>
-          <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem" class="font-medium text-[#2f3437]">
-            <span itemprop="name">Farmacia de turno en Temuco</span>
-            <meta itemprop="position" content="2">
-          </li>
-        </ol>
-      </nav>
+    <nav aria-label="Breadcrumb" class="breadcrumb-bar">
+      <ol class="flex flex-wrap items-center gap-2 text-[#787774] dark:text-[#a1a1aa]" itemscope itemtype="https://schema.org/BreadcrumbList">
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <a itemprop="item" href="/" class="transition hover:text-[#111111] dark:hover:text-[#e4e4e7] hover:underline">
+            <span itemprop="name">Inicio</span>
+          </a>
+          <meta itemprop="position" content="1">
+        </li>
+        <li aria-hidden="true">/</li>
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem" class="font-medium text-[#2f3437] dark:text-[#d4d4d8]">
+          <span itemprop="name">Farmacia de turno en Temuco</span>
+          <meta itemprop="position" content="2">
+        </li>
+      </ol>
+      <app-theme-toggle />
+    </nav>
 
       <div class="hero-layout mt-6 grid gap-6 xl:items-start">
         <div class="hero-intro">
